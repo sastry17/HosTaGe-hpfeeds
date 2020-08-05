@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="main.java.org.honeynet.hpfeeds.Hpfeeds.EOSException"/>
+<fullyQualifiedTypeName name="main.java.org.honeynet.hpfeeds.Hpfeeds.ReadTimeOutException"/>
+<fullyQualifiedTypeName name="main.java.org.honeynet.hpfeeds.Hpfeeds.LargeMessageException"/>
+<fullyQualifiedTypeName name="main.java.org.honeynet.hpfeeds.Hpfeeds.InvalidStateException"/>
+</qualifiedTypeNameHistroy>
