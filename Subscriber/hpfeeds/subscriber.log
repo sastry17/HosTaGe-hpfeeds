@@ -1,0 +1,10 @@
+2020-08-10 13:25:04,864 INFO Connected to:hpfeeds
+2020-08-10 13:25:10,339 INFO Received message on Conpot channel!
+2020-08-10 13:25:10,339 INFO b'{"publisher":"hostage","sport": 21,"dport": 5672}'
+2020-08-10 13:25:10,339 INFO inserting...b'{"publisher":"hostage","sport": 21,"dport": 5672}'
+2020-08-10 13:25:10,352 INFO Added to DB
+2020-08-10 13:27:29,613 INFO Connected to:hpfeeds
+2020-08-10 13:27:33,611 INFO Received message on Conpot channel! from:testing
+2020-08-10 13:27:33,611 INFO b'{"publisher":"hostage","sport": 21,"dport": 5672}'
+2020-08-10 13:27:33,611 INFO inserting...b'{"publisher":"hostage","sport": 21,"dport": 5672}'
+2020-08-10 13:27:33,634 INFO Added to DB

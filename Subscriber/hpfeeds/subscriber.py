@@ -1,29 +1,36 @@
 import sys
-import logging
 
-logging.basicConfig(level=logging.WARNING)
-from gridfs import GridFS
 import hpfeeds
 import pymongo
 import ast
-import datetime
-import md5util
+import json
+import logging
 
+
+#####################################################################
+#Broker Information
 HOST = '127.0.0.1'
-PORT = 10000
-#CHANNELS = ['dionaea.connections', 'geoloc.events', 'dionaea.dcerpcrequests', 'dionaea.shellcodeprofiles',
-            #'mwbinary.dionaea.sensorunique', 'dionaea.capture']
+PORT = 20000
 CHANNELS = ['hostage','conpot']
-IDENT = 'xxxxxxxxx'
-SECRET = 'xxxxxxxxxxxxx'
-
-# Required
+IDENT = 'testing'
+SECRET = 'secretkey'
+######################################################################
+# Required - MongoDB information
 MONGOHOST = '127.0.0.1'
 MONGOPORT = 27017
 MONGODBNAME = 'channels'
 # Optional
 MONGOUSER = ''
 MONGOPWD = ''
+#########################################################################
+#Init logger
+logger = logging.getLogger('hpfeeds Subscriber')
+hdlr = logging.FileHandler('./subscriber.log') #log file path
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO) #Log level
+##########################################################################
 
 
 def get_db(host, port, name, user='', passwd=''):
@@ -36,106 +43,52 @@ def get_db(host, port, name, user='', passwd=''):
 
 def main():
     hpc = hpfeeds.new(HOST, PORT, IDENT, SECRET)
-    print >> sys.stderr, 'connected to', hpc.brokername
 
-    insertCon = pymongo.Connection(host="localhost", port=27017)
-    db = None
-    collection = None
+    logger.info('Connected to:'+hpc.brokername)
+
+    insertCon = pymongo.MongoClient(host="localhost", port=27017)
+    #db = "channels"
+    #collection = "hostage"
 
     def on_message(identifier, channel, payload):
-        if channel == 'channels.hostage':
+        if channel == 'hostage':
             try:
                 msg = ast.literal_eval(str(payload))
+                #msg = json.dumps(payload)
             except:
-                print
-                'exception processing dionaea.connections event', repr(payload)
+                logger.error('exception processing hostage.connections event:'+repr(payload))
+
             else:
-                msg["time"] = datetime.datetime.utcfromtimestamp(msg['time'])
-                msg['rport'] = int(msg['rport'])
-                msg['lport'] = int(msg['lport'])
-                print
-                'inserting...', msg
+                logger.info("Received message on hostage channel! from:"+identifier)
+                logger.info(msg)
+                logger.info('inserting record:'+ str(msg))
+
                 db = insertCon['channels']
                 collection = db['hostage']
-                collection.insert(msg)
-        elif channel == 'geoloc.events':
-            try:
-                payload_python = str(payload)
-                msg = ast.literal_eval(payload_python.replace("null", "None"))
-            except:
-                print
-                'exception processing geoloc.events', repr(payload)
-            else:
-                msg['time'] = datetime.datetime.strptime(msg['time'], "%Y-%m-%d %H:%M:%S")
-                print
-                'inserting...', msg
-                db = insertCon['geoloc']
-                collection = db['events']
-                collection.insert(msg)
-        elif channel == 'dionaea.dcerpcrequests':
-            try:
-                payload_python = str(payload)
-                msg = ast.literal_eval(payload_python.replace("null", "None"))
-            except:
-                print
-                'exception processing dionaea.dcerpcrequests', repr(payload)
-            else:
-                dt = datetime.datetime.now()
-                msg['time'] = dt.strftime('%Y-%m-%d %H:%M:%S')
-                print
-                'inserting...', msg
-                db = insertCon['dionaea']
-                collection = db['dcerpcrequests']
-                collection.insert(msg)
-        elif channel == 'dionaea.shellcodeprofiles':
-            try:
-                payload_python = str(payload)
-                msg = ast.literal_eval(payload_python.replace("null", "None"))
-            except:
-                print
-                'exception processing dionaea.shellcodeprofiles', repr(payload)
-            else:
-                dt = datetime.datetime.now()
-                msg['time'] = dt.strftime('%Y-%m-%d %H:%M:%S')
-                print
-                'inserting...', msg
-                db = insertCon['dionaea']
-                collection = db['shellcodeprofiles']
-                collection.insert(msg)
-        elif channel == 'mwbinary.dionaea.sensorunique':
-            try:
-                payload_python = str(payload)
-            except:
-                print
-                'exception processing mwbinary.dionaea.sensorunique', repr(payload)
-            else:
-                hash = md5util.new()
-                hash.update(payload_python)
-                msg = hash.hexdigest()
-                print
-                'inserting mwbinary...', msg
+                collection.insert_one(json.loads(msg))
+                logger.info("Added to DB")
 
-                db = insertCon['dionaea']
-                gfsDate = GridFS(db)
-                gfsDate.put(payload_python, filename=msg)
-        elif channel == 'dionaea.capture':
+
+        elif channel == 'conpot':
             try:
                 payload_python = str(payload)
                 msg = ast.literal_eval(payload_python.replace("null", "None"))
             except:
-                print
-                'exception processing dionaea.capture', repr(payload)
+                logger.error('exception processing  conpot events:'+repr(payload))
+
             else:
-                dt = datetime.datetime.now()
-                msg['time'] = dt.strftime('%Y-%m-%d %H:%M:%S')
-                print
-                'inserting...', msg
-                db = insertCon['dionaea']
-                collection = db['capture']
-                collection.insert(msg)
+                logger.info("Received message on Conpot channel! from:"+identifier)
+                logger.info(msg)
+                logger.info('inserting...'+ str(msg))
+
+                db = insertCon['channels']
+                collection = db['conpot']
+                collection.insert_one(json.loads(msg))
+                logger.info("Added to DB")
+
 
     def on_error(payload):
-        print >> sys.stderr, ' -> errormessage from server: {0}'.format(payload)
+        logger.critical(sys.stderr+' -> errormessage from server: {0}'.format(payload))
         hpc.stop()
 
     hpc.subscribe(CHANNELS)
