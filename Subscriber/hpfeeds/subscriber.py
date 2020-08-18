@@ -12,8 +12,8 @@ import logging
 HOST = '127.0.0.1'
 PORT = 20000
 CHANNELS = ['hostage','conpot']
-IDENT = 'testing'
-SECRET = 'secretkey'
+IDENT = 'xxxxx'
+SECRET = 'xxxxxx'
 ######################################################################
 # Required - MongoDB information
 MONGOHOST = '127.0.0.1'
@@ -25,7 +25,7 @@ MONGOPWD = ''
 #########################################################################
 #Init logger
 logger = logging.getLogger('hpfeeds Subscriber')
-hdlr = logging.FileHandler('./subscriber.log') #log file path
+hdlr = logging.FileHandler('C:\cti-logs\hpfeeds\subscriber\subscriber.log') #log file path
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
@@ -88,7 +88,7 @@ def main():
 
 
     def on_error(payload):
-        logger.critical(sys.stderr+' -> errormessage from server: {0}'.format(payload))
+        logger.critical(' -> errormessage from server: {0}'.format(payload))
         hpc.stop()
 
     hpc.subscribe(CHANNELS)
@@ -101,4 +101,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except KeyboardInterrupt:
+        logger.critical("Unexpected exception!")
         sys.exit(0)
