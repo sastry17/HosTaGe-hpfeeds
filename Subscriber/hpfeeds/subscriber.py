@@ -65,7 +65,7 @@ def main():
 
                 db = insertCon['channels']
                 collection = db['hostage']
-                collection.insert_one(json.loads(msg))
+                collection.insert_many(json.loads(msg))
                 logger.info("Added to DB")
 
 
